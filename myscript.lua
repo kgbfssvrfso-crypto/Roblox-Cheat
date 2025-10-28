@@ -131,3 +131,87 @@ game:GetService("RunService").RenderStepped:Connect(function()
 end)
 
 print("Скрипт загружен. Да начнется хаос! 😈")
+Label.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+    titleLabel.TextColor3 = Color3.new(1, 1, 1)
+    titleLabel.Parent = mainFrame
+
+    -- Добавляем UIListLayout для автоматического размещения кнопок под заголовком
+    local layout = Instance.new("UIListLayout")
+    layout.FillDirection = Enum.FillDirection.Vertical
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    layout.Padding = UDim.new(0, 5) -- Отступ 5 пикселей
+    layout.Parent = mainFrame
+    -- Устанавливаем отступ для первого элемента (кнопок) от заголовка
+    layout.AbsoluteContentOffset = Vector2.new(0, titleLabel.AbsoluteSize.Y + 5)
+
+
+    -- Кнопка для полета
+    local flyButton = createButton(mainFrame, "Fly: OFF", function()
+        toggleFly()
+        flyButton.Text = "Fly: " .. (flyEnabled and "ON" or "OFF")
+    end)
+
+    -- Кнопка для автонаводки
+    local aimbotButton = createButton(mainFrame, "Aimbot: OFF", function()
+        toggleAimbot()
+        aimbotButton.Text = "Aimbot: " .. (aimbotEnabled and "ON" or "OFF")
+    end)
+
+    -- Кнопка для быстрой стрельбы
+    local rapidFireButton = createButton(mainFrame, "Rapid Fire: OFF", function()
+        toggleRapidFire()
+        rapidFireButton.Text = "Rapid Fire: " .. (rapidFireEnabled and "ON" or "OFF")
+    end)
+
+    return screenGui -- Возвращаем GUI, чтобы можно было его управлять
+end
+
+-- /////////////////////////////////////////////////////////////////////////////
+-- // ФУНКЦИЯ ВКЛЮЧЕНИЯ/ВЫКЛЮЧЕНИЯ ВИДИМОСТИ МЕНЮ //
+-- /////////////////////////////////////////////////////////////////////////////
+local hackMenu = nil -- Храним ссылку на созданное меню
+local function toggleMenu()
+    menuEnabled = not menuEnabled
+    if menuEnabled then
+        print("Меню активировано!")
+        if not hackMenu then -- Если меню еще не создано, создаем его
+            hackMenu = createMenu()
+        else
+            hackMenu.Enabled = true -- Если создано, просто делаем видимым
+        end
+    else
+        print("Меню деактивировано!")
+        if hackMenu then
+            hackMenu.Enabled = false -- Делаем невидимым
+        end
+    end
+end
+
+-- /////////////////////////////////////////////////////////////////////////////
+-- // ОБРАБОТКА ВВОДА ПОЛЬЗОВАТЕЛЯ (Кнопка для меню) //
+-- /////////////////////////////////////////////////////////////////////////////
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then return end
+
+    -- Кнопка "Insert" для включения/выключения меню
+    if input.KeyCode == Enum.KeyCode.Insert then
+        toggleMenu()
+    end
+end)
+
+-- /////////////////////////////////////////////////////////////////////////////
+-- // ГЛАВНЫЙ ЦИКЛ ОБНОВЛЕНИЯ ФУНКЦИЙ ХАКА //
+-- /////////////////////////////////////////////////////////////////////////////
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if flyEnabled then
+        -- Перемещаем персонажа вверх, если полет активен
+        RootPart.CFrame = RootPart.CFrame * CFrame.new(0, flySpeed * 0.01, 0)
+    end
+    if aimbotEnabled then
+        updateAimbot() -- Обновляем автонаводку каждый кадр, если активна
+    end
+end)
+
+print("Скрипт загружен. Да начнется хаос! 😈")
