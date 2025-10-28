@@ -62,68 +62,7 @@ local function findNearestEnemy()
 
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-            re: ON"
-                else
-                    child.Text = "Rapid Fire: OFF"
-                end
-                break
-            end
-        end
-    end)
-
-    return screenGui -- Возвращаем GUI, чтобы можно было его удалить
-end
-
--- /////////////////////////////////////////////////////////////////////////////
--- // ФУНКЦИЯ ВКЛЮЧЕНИЯ/ВЫКЛЮЧЕНИЯ МЕНЮ //
--- /////////////////////////////////////////////////////////////////////////////
-local hackMenu = nil -- Храним ссылку на меню
-local function toggleMenu()
-    menuEnabled = not menuEnabled
-    if menuEnabled then
-        print("Меню активировано!")
-        if not hackMenu then -- Создаем меню только если его еще нет
-            hackMenu = createMenu()
-        else
-            hackMenu.Enabled = true  -- Просто делаем видимым, если оно уже создано
-        end
-    else
-        print("Меню деактивировано!")
-        if hackMenu then
-            hackMenu.Enabled = false -- Делаем невидимым, не удаляем
-        end
-    end
-end
-
--- /////////////////////////////////////////////////////////////////////////////
--- // УПРАВЛЕНИЕ (Привязка к кнопкам) //
--- /////////////////////////////////////////////////////////////////////////////
-
-UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if gameProcessedEvent then return end
-
-    -- Кнопка "Insert" для включения/выключения меню
-    if input.KeyCode == Enum.KeyCode.Insert then
-        toggleMenu()
-    end
-end)
-
--- /////////////////////////////////////////////////////////////////////////////
--- // ГЛАВНЫЙ ЦИКЛ //
--- /////////////////////////////////////////////////////////////////////////////
-
-game:GetService("RunService").RenderStepped:Connect(function()
-    if flyEnabled then
-        -- Перемещаем персонажа вверх
-        RootPart.CFrame = RootPart.CFrame * CFrame.new(0, flySpeed * 0.01, 0)
-    end
-    if aimbotEnabled then
-        updateAimbot() -- Обновляем автонаводку каждый кадр
-    end
-end)
-
-print("Скрипт загружен. Да начнется хаос! 😈")
-local enemyRoot = player.Character:FindFirstChild("HumanoidRootPart")
+                        local enemyRoot = player.Character:FindFirstChild("HumanoidRootPart")
             if enemyRoot then
                 local distance = (RootPart.Position - enemyRoot.Position).magnitude
                 if distance < minDistance and distance < maxDistance then
@@ -232,3 +171,64 @@ local function createMenu()
             if child:IsA("TextButton") and child.Text:sub(1, 10) == "Rapid Fire" then
                 if rapidFireEnabled then
                     child.Text = "Rapid Fi
+                        re: ON"
+                else
+                    child.Text = "Rapid Fire: OFF"
+                end
+                break
+            end
+        end
+    end)
+
+    return screenGui -- Возвращаем GUI, чтобы можно было его удалить
+end
+
+-- /////////////////////////////////////////////////////////////////////////////
+-- // ФУНКЦИЯ ВКЛЮЧЕНИЯ/ВЫКЛЮЧЕНИЯ МЕНЮ //
+-- /////////////////////////////////////////////////////////////////////////////
+local hackMenu = nil -- Храним ссылку на меню
+local function toggleMenu()
+    menuEnabled = not menuEnabled
+    if menuEnabled then
+        print("Меню активировано!")
+        if not hackMenu then -- Создаем меню только если его еще нет
+            hackMenu = createMenu()
+        else
+            hackMenu.Enabled = true  -- Просто делаем видимым, если оно уже создано
+        end
+    else
+        print("Меню деактивировано!")
+        if hackMenu then
+            hackMenu.Enabled = false -- Делаем невидимым, не удаляем
+        end
+    end
+end
+
+-- /////////////////////////////////////////////////////////////////////////////
+-- // УПРАВЛЕНИЕ (Привязка к кнопкам) //
+-- /////////////////////////////////////////////////////////////////////////////
+
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then return end
+
+    -- Кнопка "Insert" для включения/выключения меню
+    if input.KeyCode == Enum.KeyCode.Insert then
+        toggleMenu()
+    end
+end)
+
+-- /////////////////////////////////////////////////////////////////////////////
+-- // ГЛАВНЫЙ ЦИКЛ //
+-- /////////////////////////////////////////////////////////////////////////////
+
+game:GetService("RunService").RenderStepped:Connect(function()
+    if flyEnabled then
+        -- Перемещаем персонажа вверх
+        RootPart.CFrame = RootPart.CFrame * CFrame.new(0, flySpeed * 0.01, 0)
+    end
+    if aimbotEnabled then
+        updateAimbot() -- Обновляем автонаводку каждый кадр
+    end
+end)
+
+print("Скрипт загружен. Да начнется хаос! 😈")
