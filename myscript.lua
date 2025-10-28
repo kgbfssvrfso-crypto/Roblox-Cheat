@@ -1,24 +1,68 @@
 --[[
-    UltimateRobloxHack.lua - Скрипт для создания хаоса в Roblox
+    UltimateRobloxHack.lua - Скрипт для создания хаоса с меню!
     ВНИМАНИЕ: Это концептуальный скрипт. Он требует доработки
     для конкретной игры и обхода анти-чита. Использование на свой страх и риск!
+
+    Этот блок кода предназначен для вставки в конец другого скрипта.
+    Он является самодостаточным и не должен конфликтовать с большинством
+    других скриптов, если они не используют те же имена локальных переменных
+    или не переопределяют глобальные сервисы Roblox.
 ]]--
 
+-- /////////////////////////////////////////////////////////////////////////////
+-- // ИНИЦИАЛИЗАЦИЯ СЕРВИСОВ И ПЕРСОНАЖА (для этого скрипта) //
+-- // Это нужно, чтобы скрипт работал независимо, даже если основной скрипт
+-- // не передает эти переменные.
+-- /////////////////////////////////////////////////////////////////////////////
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+-- Ожидаем загрузки персонажа, если он еще не появился
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local Humanoid = Character:WaitForChild("Humanoid")
 local RootPart = Character:WaitForChild("HumanoidRootPart")
+local UserInputService = game:GetService("UserInputService")
 
 -- /////////////////////////////////////////////////////////////////////////////
--- // ФУНКЦИЯ ПОЛЕТА (Fly) //
+-- // ПЕРЕМЕННЫЕ СОСТОЯНИЯ ДЛЯ ФУНКЦИЙ ХАКА //
 -- /////////////////////////////////////////////////////////////////////////////
-local flying = false
-local flySpeed = 50 -- Скорость полета, можешь менять, ублюдок!
+local menuEnabled = false -- Изначально меню выключено
+local flyEnabled = false
+local aimbotEnabled = false
+local rapidFireEnabled = false
+local flySpeed = 50 -- Скорость полета
+
+-- /////////////////////////////////////////////////////////////////////////////
+-- // ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ ДЛЯ СОЗДАНИЯ КНОПОК МЕНЮ //
+-- /////////////////////////////////////////////////////////////////////////////
+local function createButton(frame, text, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0.9, 0, 0.1, 0)
+    -- Используем UIListLayout для автоматического размещения кнопок
+    local layout = frame:FindFirstChildOfClass("UIListLayout")
+    if not layout then
+        layout = Instance.new("UIListLayout")
+        layout.FillDirection = Enum.FillDirection.Vertical
+        layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        layout.Padding = UDim.new(0, 5) -- Небольшой отступ между кнопками
+        layout.Parent = frame
+    end
+    button.Text = text
+    button.Font = Enum.Font.SourceSans
+    button.TextSize = 18
+    button.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Parent = frame
+    button.MouseButton1Click:Connect(callback)
+    return button
+end
+
+-- /////////////////////////////////////////////////////////////////////////////
+-- // ФУНКЦИИ ХАКА (ПОЛЕТ, АВТОНАВОДКА, БЫСТРАЯ СТРЕЛЬБА) //
+-- /////////////////////////////////////////////////////////////////////////////
 
 local function toggleFly()
-    flying = not flying
-    if flying then
+    flyEnabled = not flyEnabled
+    if flyEnabled then
         Humanoid.PlatformStand = true
         RootPart.Anchored = true
         print("Полет активирован! Лети и сеешь хаос! 😈")
@@ -29,12 +73,8 @@ local function toggleFly()
     end
 end
 
--- /////////////////////////////////////////////////////////////////////////////
--- // ФУНКЦИЯ АВТОНАВОДКИ (Aimbot) //
--- /////////////////////////////////////////////////////////////////////////////
-local aimbotEnabled = false
 local aimbotTarget = nil
-local maxDistance = 300 -- Максимальная дистанция для автонаводки, меняй!
+local maxDistance = 300 -- Максимальная дистанция для автонаводки
 
 local function findNearestEnemy()
     local nearestEnemy = nil
@@ -61,7 +101,7 @@ local function updateAimbot()
         if aimbotTarget then
             -- Наводим камеру на цель
             local lookVector = (aimbotTarget.Position - RootPart.Position).Unit
-      local cam = game:GetService("Workspace").CurrentCamera
+            local cam = game:GetService("Workspace").CurrentCamera
             cam.CFrame = CFrame.new(cam.CFrame.p, cam.CFrame.p + lookVector)
             -- Здесь можно добавить логику для стрельбы, если у тебя есть оружие
         end
@@ -78,17 +118,11 @@ local function toggleAimbot()
     end
 end
 
--- /////////////////////////////////////////////////////////////////////////////
--- // ФУНКЦИЯ БЫСТРОЙ СТРЕЛЬБЫ (Rapid Fire) //
--- /////////////////////////////////////////////////////////////////////////////
-local rapidFireEnabled = false
-
 local function toggleRapidFire()
     rapidFireEnabled = not rapidFireEnabled
     if rapidFireEnabled then
         print("Быстрая стрельба активирована! Залей их свинцом! 😈")
         -- Здесь нужно найти скрипт оружия и изменить его задержку стрельбы (очень сложно и зависит от игры!)
-        -- Например, если у оружия есть свойство Cooldown или FireRate, его можно попытаться изменить.
         -- Это требует глубокого анализа конкретного скрипта оружия в игре.
     else
         print("Быстрая стрельба деактивирована. Снова как обычный смертный. 😠")
@@ -96,42 +130,30 @@ local function toggleRapidFire()
 end
 
 -- /////////////////////////////////////////////////////////////////////////////
--- // УПРАВЛЕНИЕ (Привязка к кнопкам) //
+-- // ФУНКЦИЯ ДЛЯ СОЗДАНИЯ ГРАФИЧЕСКОГО ИНТЕРФЕЙСА МЕНЮ //
 -- /////////////////////////////////////////////////////////////////////////////
-local UserInputService = game:GetService("UserInputService")
 
-UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if gameProcessedEvent then return end
+local function createMenu()
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "UltimateHackMenu"
+    screenGui.Parent = LocalPlayer.PlayerGui
 
-    -- Пример: Кнопка "F" для полета
-    if input.KeyCode == Enum.KeyCode.F then
-        toggleFly()
-    end
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0.3, 0, 0.5, 0)
+    mainFrame.Position = UDim2.new(0.35, 0, 0.25, 0)
+    mainFrame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Parent = screenGui
+    mainFrame.Draggable = true -- Делаем меню перетаскиваемым
 
-    -- Пример: Кнопка "E" для автонаводки
-    if input.KeyCode == Enum.KeyCode.E then
-        toggleAimbot()
-    end
-
-    -- Пример: Кнопка "R" для быстрой стрельбы
-    if input.KeyCode == Enum.KeyCode.R then
-        toggleRapidFire()
-    end
-end)
-
--- /////////////////////////////////////////////////////////////////////////////
--- // ГЛАВНЫЙ ЦИКЛ //
--- /////////////////////////////////////////////////////////////////////////////
-game:GetService("RunService").RenderStepped:Connect(function()
-    if flying then
-        -- Перемещаем персонажа вверх
-        RootPart.CFrame = RootPart.CFrame * CFrame.new(0, flySpeed * 0.01, 0)
-    end
-    updateAimbot() -- Обновляем автонаводку каждый кадр
-end)
-
-print("Скрипт загружен. Да начнется хаос! 😈")
-Label.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, 0, 0.1, 0)
+    titleLabel.Position = UDim2.new(0, 0, 0, 0)
+    titleLabel.Text = "UltimateHack Menu"
+    titleLabel.Font = Enum.Font.SourceSansBold
+    titleLabel.TextSize = 20
+    title
+    Label.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
     titleLabel.TextColor3 = Color3.new(1, 1, 1)
     titleLabel.Parent = mainFrame
 
